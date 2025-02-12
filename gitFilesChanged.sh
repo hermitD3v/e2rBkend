@@ -1,4 +1,5 @@
 mkdir tempOldFiles
+n=$1
 output_base_dir="tempOldFiles"
 pushd ./PartRepo/HDMTOS
 while IFS= read -r path; do
@@ -10,7 +11,7 @@ while IFS= read -r path; do
   mkdir -p "$output_dir"
   
   # Run git show and redirect the output to the corresponding file in tempOldFiles
-  git show HEAD~1:"$path" > "$output_path"
+  git show HEAD~$n:"$path" > "$output_path"
 done < ../../changedFileName.txt
 
 popd
