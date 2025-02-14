@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E2R</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='css/styles.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="header">
+        <img src="{{ url_for('static', path='images/logo.png') }}" alt="Logo" class="logo-img">
+        <span class="team-name">TETD India</span>
+    </div>  
+
+    <div class="container">
+        <div class="slider">
+            
+            <div class="page" id="page1">
+                <div class="center-content">
+                    <h1>EverReadyToRelease</h1>
+                    <p>Test • Run • Build</p>
+                    <form id="runForm">
+                        <div class="input-area">
+                            <input type="text" id="branch_name" name="branch_name" placeholder="Enter Branch Name" class="input-field" required>
+                            <input type="text" id="number_of_commits" name="number_of_commits" placeholder="Enter Number of Commits" class="input-field" required>
+                            <button type="submit" class="btn">Run</button>
+                        </div>
+                    </form>
+                    <p id="error-message" style="color: red; display: none;">Repo not found</p>
+                </div>
+            </div>
+
+            
+            <div class="page" id="page2" style="display:none;">
+                <div class="center-content">
+                    <h1>Suggested Test and Recipe</h1>
+                    <textarea id="suggestedTest" class="input-field dynamic-textbox" readonly></textarea>
+                    <textarea id="suggestedRecipe" class="input-field dynamic-textbox" readonly></textarea>
+                    <button class="btn" onclick="nextPage()">Next</button>
+                </div>
+            </div>
+
+            
+            <div class="page" id="page3" style="display:none;">
+                <div class="center-content">
+                    <h1>Select the Tester</h1>
+                    <select id="actionChoice" class="input-field">
+                        <option value="HDBI">HDBI</option>
+                        <option value="HDMT">HDMT</option>
+                        <option value="Shared">Shared</option>
+                    </select>
+                    <button class="btn" onclick="goToPage4()">Build</button>
+                </div>
+            </div>
+
+            
+            <div class="page" id="page4" style="display:none;">
+                <div class="center-content">
+                    <h1>Build Triggered</h1>
+                    <p>Your build has been triggered successfully!</p>
+
+                    <div class="copy-container">
+                        <input type="text" class="copy-text" value="Link to TeamCity Build" readonly>
+                        <button class="copy-btn" onclick="copyToClipboard()">Copy</button>
+                    </div>
+                   
+                    <div>
+                        <a href="#" id="configureLink" class="link">
+                            <img src="{{ url_for('static', path='images/setting.png') }}" alt="Settings Icon" class="settings-icon">
+                            Configure who gets an email
+                        </a>  
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        Developed and Maintained by TETD India Team
+    </footer>  
+
+    <script src="{{ url_for('static', path='js/script.js') }}"></script>  
+</body>
+</html>
