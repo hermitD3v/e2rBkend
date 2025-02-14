@@ -146,23 +146,17 @@ def find_function_callers(test_folder_path, target_function):
                                     caller_functions.add(func_name)
     return caller_functions
 
-base_folder = r'..\PartRepo\HDMTOS\I2L'
-new_folder = r'..\tempOldFiles\I2L'
-development_folders = [r'..\PartRepo\HDMTOS\I2L', r'..\PartRepo\HDMTOS\HAL', r'..\PartRepo\HDMTOS\TAL']
+base_folder = r'.\PartRepo\HDMTOS\I2L'
+new_folder = r'.\tempOldFiles\I2L'
+development_folders = [r'.\PartRepo\HDMTOS\I2L', r'.\PartRepo\HDMTOS\HAL', r'.\PartRepo\HDMTOS\TAL']
 
 # Get changed files and functions
 print("Getting changed files...")
 
-changed_files
-
-
-
-
-
-=list()
-with open('..\changedFileName.txt', 'r') as changedFiles:
+changed_files=list()
+with open('.\changedFileName.txt', 'r') as changedFiles:
     for file in changedFiles:
-        changed_files.append('..\\PartRepo\\HDMTOS\\'+file.strip().replace('/','\\'))
+        changed_files.append('.\\PartRepo\\HDMTOS\\'+file.strip().replace('/','\\'))
         print(file)
 
 print(f"Changed files: {changed_files}")
