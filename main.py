@@ -30,20 +30,28 @@ def get_affected_functions():
 
 
 def get_recipe_test():
-    result = subprocess.run(["python", "recipetest.py"], capture_output=True, text=True)
-    csv_output = result.stdout
+    # Run the test case script
+    subprocess.run(["python", "Testandtestcase.py"], capture_output=True, text=True)
 
-    
+    # Run the recipe script
+    subprocess.run(["python", "Recipe.py"], capture_output=True, text=True)
+
+    # Read test cases from the test case output file
     testcases = []
+    with open('test_case_names.txt', 'r') as test_file:
+        for line in test_file:
+            line = line.strip()
+            if line:  # Add non-empty lines
+                testcases.append(line)
+
+    # Read recipes from the recipe output file
     recipes = []
-    with open('affected_tests_and_cases_recipe.csv') as csv_file:
-    #next(csv_reader, None)
-        csv_reader = csv.reader(csv_file)
-        for row in csv_reader:
-            if len(row)>=3:
-                testcases.append(row[1])
-                recipes.append(row[2])
-    
+    with open('recipe.txt', 'r') as recipe_file:
+        for line in recipe_file:
+            line = line.strip()
+            if line:  # Add non-empty lines
+                recipes.append(line)
+
     return testcases, recipes
 
 @app.get("/", response_class=HTMLResponse)
@@ -55,16 +63,16 @@ async def read_root(request: Request):
 def run(request: Request, background_tasks: BackgroundTasks,
               branch_name: str = Form(...), number_of_commits: str = Form(...)):
     
+    #git clone
     result = subprocess.run(["sh", "gitPartClone.sh", branch_name, number_of_commits], capture_output=True, text=True)
     print(result)
+    #git changed functions
     result = subprocess.run(["sh", "gitFilesChanged.sh", number_of_commits], capture_output=True, text=True)
     print(result)
 
-    #background_tasks.add_task(run_script, "gitPartClone.sh", branch_name, number_of_commits)
-    #background_tasks.add_task(run_script, "gitFilesChanged.sh", branch_name, number_of_commits)
-
-    
+    #get test case and recipe
     get_affected_functions()
+    subprocess.Popen('.\PartRepo\HDMTOS\Validation\iVal\BuildScripts\BuildTPLFiles.bat')
 
     testcases, recipes = get_recipe_test()
     print(testcases)

@@ -1,7 +1,5 @@
 import os
 import re
-import csv
-from functools import lru_cache
 
 def is_valid_name(name):
     keyword_set = [
@@ -44,7 +42,6 @@ def is_func(line):
                     return one
     return None
 
-@lru_cache(maxsize=None)
 def func_name_extract(file_path):
     if not os.path.isfile(file_path):
         return {}
@@ -78,7 +75,6 @@ def func_name_extract(file_path):
                 functions[func_name.split('::')[-1]] = (start_line, end_line)
     return functions
 
-@lru_cache(maxsize=None)
 def find_function_callers(test_folder_path, target_function):
     caller_functions = set()
     for root, _, files in os.walk(test_folder_path):
@@ -97,7 +93,8 @@ def find_function_callers(test_folder_path, target_function):
     return caller_functions
 
 def find_function_usages_in_test_files(test_folder_path, caller_functions):
-    test_case_to_file_map = {}
+    affected_tests = set()
+    test_case_names = set()
     for root, _, files in os.walk(test_folder_path):
         for file in files:
             if file.endswith('.test'):
@@ -107,6 +104,7 @@ def find_function_usages_in_test_files(test_folder_path, caller_functions):
                     for func_name in caller_functions:
                         pattern = r'\b' + re.escape(func_name) + r'\b'
                         if re.search(pattern, content):
+                            affected_tests.add(file_path)
                             test_case_pattern = r'\btest\s+\w+\s+(\w+)\s*{'
                             matches = re.findall(test_case_pattern, content, re.IGNORECASE)
                             if matches:
@@ -119,103 +117,18 @@ def find_function_usages_in_test_files(test_folder_path, caller_functions):
                                         start_pos = test_case_start_match.start()
                                         end_pos = content.find('}', start_pos)
                                         if end_pos != -1 and re.search(pattern, content[start_pos:end_pos]):
-                                            test_case_to_file_map[test_case_name] = file_path
-    return test_case_to_file_map
-
-def read_test_files(test_files_txt):
-    with open(test_files_txt, 'r') as file:
-        test_files = [line.strip() for line in file.readlines()]
-    return test_files
-
-def get_base_directory(file_path):
-    return os.path.dirname(file_path)
-
-def find_mtpl_files(test_dir):
-    mtpl_files = []
-    for filename in os.listdir(test_dir):
-        if filename.endswith('.mtpl'):
-            mtpl_files.append(filename)  # Store only the filename
-    return mtpl_files
-
-def save_mtpl_files(mtpl_files, mtpl_txt):
-    with open(mtpl_txt, 'w') as file:
-        for mtpl in mtpl_files:
-            file.write(mtpl + '\n')
-
-def find_stpl_files(mtpl_files, root_folder):
-    stpl_files = []
-    for stpl_file in find_files_with_extension(root_folder, '.stpl'):
-        with open(stpl_file, 'r') as f:
-            content = f.read()
-            for mtpl in mtpl_files:
-                # Use regular expression to match the exact mtpl filename as a whole word
-                if re.search(r'\b' + re.escape(mtpl) + r'\b', content):
-                    stpl_files.append(stpl_file)
-                    break  # Stop after finding the first match
-    return stpl_files
-
-def save_stpl_files(stpl_files, stpl_txt):
-    with open(stpl_txt, 'w') as file:
-        for stpl in stpl_files:
-            file.write(os.path.basename(stpl) + '\n')  # Save only the basename
-
-def find_csv_files(stpl_files, root_folder):
-    csv_files = []
-    for stpl in stpl_files:
-        stpl_basename = os.path.basename(stpl)
-        for csv_file in find_files_with_extension(root_folder, '.csv'):
-            with open(csv_file, 'r') as f:
-                lines = f.readlines()
-                for line in lines:
-                    # Use regular expression to match the exact stpl basename as a whole word
-                    if re.search(r'\b' + re.escape(stpl_basename) + r'\b', line):
-                        csv_files.append(csv_file)
-                        break  # Stop after finding the first match
-    return csv_files
-
-def extract_csv_rows(stpl_files, csv_files):
-    extracted_lines = set()  # Use a set to avoid redundancy
-
-    for csv_file in csv_files:
-        with open(csv_file, 'r') as f:
-            lines = f.readlines()
-            for line in lines:
-                for stpl in stpl_files:
-                    # Use regular expression to match the exact stpl basename as a whole word
-                    if re.search(r'\b' + re.escape(os.path.basename(stpl)) + r'\b', line):
-                        extracted_lines.add(line)  # Add to set to avoid duplicates
-                        break
-
-    recipes = []
-    for line in extracted_lines:
-        row = line.strip().split(',')
-        if row and row[0].startswith('iVal'):
-            # Find the index of the last element ending with ".env"
-            env_index = next((i for i, item in enumerate(row) if item.endswith('.env')), None)
-            if env_index is not None:
-                # Write the row up to and including the ".env" element
-                recipes.append(','.join(row[:env_index + 1]))
-        else:
-            recipes.append(line)
-    return recipes
-
-def find_files_with_extension(root_folder, extension):
-    files = []
-    for dirpath, _, filenames in os.walk(root_folder):
-        for filename in filenames:
-            if filename.endswith(extension):
-                files.append(os.path.join(dirpath, filename))
-    return files
+                                            test_case_names.add(test_case_name)
+    return affected_tests, test_case_names
 
 # Define paths
 test_folder = r'.\PartRepo\HDMTOS\Validation\iVal'
-root_folder = r'.\PartRepo\HDMTOS\Validation\iVal'
 
 # Read function names from a text file
 with open("affected_functions.txt", "r") as f:
     function_names = [line.strip() for line in f.readlines()]
 
-test_case_to_file_map = {}
+all_affected_tests = set()
+all_test_case_names = set()
 
 for target_function in function_names:
     # Find caller functions in the test folder
@@ -225,34 +138,28 @@ for target_function in function_names:
 
     # Find affected test files and test case names
     print(f"\nFinding affected test files and test case names for {target_function}...")
-    test_case_to_file_map.update(find_function_usages_in_test_files(test_folder, caller_functions))
+    affected_tests, test_case_names = find_function_usages_in_test_files(test_folder, caller_functions)
 
-# Print affected test files and test case names
-print("\nAffected test files and test case names:")
-for test_case, test_file in test_case_to_file_map.items():
-    print(f"Test Case: {test_case}, Test File: {test_file}")
+    # Collect results
+    all_affected_tests.update(affected_tests)
+    all_test_case_names.update(test_case_names)
 
-# Find recipes for each test case
-test_files = list(test_case_to_file_map.values())
-test_case_to_recipe_map = {}
+# Print affected test files
+print("\nAffected test files:")
+for test_file in all_affected_tests:
+    print(test_file)
 
-for test_file in test_files:
-    test_dir = get_base_directory(test_file)
-    mtpl_files = find_mtpl_files(test_dir)
-    if mtpl_files:
-        stpl_files = find_stpl_files(mtpl_files, root_folder)
-        if stpl_files:
-            csv_files = find_csv_files(stpl_files, root_folder)
-            if csv_files:
-                recipes = extract_csv_rows(stpl_files, csv_files)
-                for test_case in test_case_to_file_map:
-                    if test_case_to_file_map[test_case] == test_file:
-                        test_case_to_recipe_map[test_case] = recipes
+# Print test case names
+print("\nTest case names:")
+for test_case in all_test_case_names:
+    print(test_case)
 
-# Write affected test files, test case names, and recipes to a CSV file
-with open("affected_tests_and_cases_recipe.csv", "w", newline='') as csvfile:
-    csvwriter = csv.writer(csvfile)
-    csvwriter.writerow(["Test File", "Test Case Name", "Recipe"])
-    for test_case, test_file in test_case_to_file_map.items():
-        recipe = test_case_to_recipe_map.get(test_case, ["N/A"])
-        csvwriter.writerow([test_file, test_case, "\n".join(recipe)])
+# Write affected test files to a .txt file
+with open("affected_tests.txt", "w") as f:
+    for test_file in all_affected_tests:
+        f.write(test_file + "\n")
+
+# Write test case names to a separate .txt file
+with open("test_case_names.txt", "w") as f:
+    for test_case in all_test_case_names:
+        f.write(test_case + "\n")
