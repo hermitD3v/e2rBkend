@@ -208,8 +208,8 @@ def find_files_with_extension(root_folder, extension):
     return files
 
 # Define paths
-test_folder = r'D:\Users\arastu\HDMTOS\Validation\iVal'
-root_folder = r'D:\Users\arastu\HDMTOS\Validation\iVal'
+test_folder = r'.\PartRepo\HDMTOS\Validation\iVal'
+root_folder = r'.\PartRepo\HDMTOS\Validation\iVal'
 
 # Read function names from a text file
 with open("affected_functions.txt", "r") as f:

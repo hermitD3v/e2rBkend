@@ -33,17 +33,17 @@ def get_recipe_test():
     result = subprocess.run(["python", "recipetest.py"], capture_output=True, text=True)
     csv_output = result.stdout
 
-    csv_reader = csv.reader(StringIO(csv_output))
+    
     testcases = []
     recipes = []
-
-    next(csv_reader, None)
- 
-    for row in csv_reader:
-        if len(row)>=3:
-         testcases.append(row[1])
-         recipes.append(row[2])
- 
+    with open('affected_tests_and_cases_recipe.csv') as csv_file:
+    #next(csv_reader, None)
+        csv_reader = csv.reader(csv_file)
+        for row in csv_reader:
+            if len(row)>=3:
+                testcases.append(row[1])
+                recipes.append(row[2])
+    
     return testcases, recipes
 
 @app.get("/", response_class=HTMLResponse)
@@ -68,6 +68,7 @@ def run(request: Request, background_tasks: BackgroundTasks,
 
     testcases, recipes = get_recipe_test()
     print(testcases)
+    print(recipes)
 
     return templates.TemplateResponse("index.html", {
         "request": request,
