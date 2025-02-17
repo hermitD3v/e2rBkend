@@ -62,7 +62,7 @@ async def read_root(request: Request):
 @app.post("/run", response_class=HTMLResponse)
 def run(request: Request, background_tasks: BackgroundTasks,
               branch_name: str = Form(...), number_of_commits: str = Form(...)):
-    
+    print("Clicked on run")
     #git clone
     result = subprocess.run(["sh", "gitPartClone.sh", branch_name, number_of_commits], capture_output=True, text=True)
     print(result)
