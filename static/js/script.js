@@ -1,6 +1,8 @@
 let currentPage = 0;
 const pages = document.querySelectorAll('.page');
 const slider = document.querySelector('.slider');
+const progressBar = document.getElementById("progressBar");
+const progressBarContainer = document.getElementById("progress-bar-container");
 
 function nextPage() {
     if (currentPage < pages.length - 1) {
@@ -37,51 +39,55 @@ function goToPage4() {
 function submitForm() {
     const branchName = document.getElementById("branch_name").value;
     const numCommits = document.getElementById("number_of_commits").value;
+    const runButton = document.querySelector(".btn"); 
+    const errorMessage = document.getElementById("error-message");
 
-    if (!branchName) {
-        alert("Please enter the branch name.");
+    
+    if (!branchName || !numCommits) {
+        alert("Please enter all required details.");
         return;
     }
 
-    if (!numCommits) {
-        alert("Please enter the number of commits.");
-        return;
-    }
+    
+    runButton.style.display = "none";  
+    progressBarContainer.style.display = "block";  
+    progressBar.style.display = "block";  
+    progressBar.value = 0;
+
+    document.getElementById("page1").style.display = "none"; 
 
     fetch("/run", {
         method: "POST",
         headers: {
             "Content-Type": "application/x-www-form-urlencoded"
         },
-        body: `branch_name=${branchName}&number_of_commits=${numCommits}`
+        body: `branch_name=${encodeURIComponent(branchName)}&number_of_commits=${encodeURIComponent(numCommits)}`
     })
     .then(response => {
         if (!response.ok) {
             return response.json().then(errorData => {
-                throw new Error(errorData.detail || "repo not found!!!");
+                throw new Error(errorData.detail || "Error occurred");
             });
         }
-        return response.text();
+        return response.json();
     })
-    .then(html => {
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(html, "text/html");
-
-    
-        const suggestedTest = doc.querySelector("#suggestedTest")?.textContent || "";
-        const suggestedRecipe = doc.querySelector("#suggestedRecipe")?.textContent || "";
-
-        document.getElementById("suggestedTest").textContent = suggestedTest;
-        document.getElementById("suggestedRecipe").textContent = suggestedRecipe;
+    .then(data => {
+        
+        document.getElementById("suggestedTest").value = data.testcases.join("\n");
+        document.getElementById("suggestedRecipe").value = data.recipes.join("\n");
 
         
-        document.getElementById("page1").style.display = "none";
-        document.getElementById("page2").style.display = "block";
+        progressBar.style.display = "none"; 
+        progressBarContainer.style.display = "none";
+        document.getElementById("page2").style.display = "block"; 
     })
     .catch(error => {
         console.error("Error:", error);
-        document.getElementById("error-message").style.display = 'block';
-        document.getElementById("error-message").textContent = error.message;
+        errorMessage.style.display = "block";
+        errorMessage.textContent = error.message;
+        progressBar.style.display = "none"; 
+        progressBarContainer.style.display = "none";
+        runButton.style.display = "block";  
     });
 }
 
