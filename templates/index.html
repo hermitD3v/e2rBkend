@@ -15,7 +15,6 @@
 
     <div class="container">
         <div class="slider">
-            
             <div class="page" id="page1">
                 <div class="center-content">
                     <h1>EverReadyToRelease</h1>
@@ -27,21 +26,21 @@
                             <button type="submit" class="btn">Run</button>
                         </div>
                     </form>
+                    
+                    <progress id="progressBar" value="0" max="100" style="display: none;"></progress>
                     <p id="error-message" style="color: red; display: none;">Repo not found</p>
                 </div>
             </div>
 
-            
             <div class="page" id="page2" style="display:none;">
                 <div class="center-content">
                     <h1>Suggested Test and Recipe</h1>
-                    <textarea id="suggestedTest" class="input-field dynamic-textbox" readonly>{{ testcases }}</textarea>
-                    <textarea id="suggestedRecipe" class="input-field dynamic-textbox" readonly>{{ recipes }}</textarea>
+                    <textarea id="suggestedTest" class="input-field dynamic-textbox" readonly>{{ testcases | join('\n') if testcases else "No test cases found." }}</textarea>
+                    <textarea id="suggestedRecipe" class="input-field dynamic-textbox" readonly>{{ recipes | join('\n') if recipes else "No recipes found." }}</textarea>
                     <button class="btn" onclick="nextPage()">Next</button>
                 </div>
             </div>
 
-            
             <div class="page" id="page3" style="display:none;">
                 <div class="center-content">
                     <h1>Select the Tester</h1>
@@ -54,17 +53,14 @@
                 </div>
             </div>
 
-            
             <div class="page" id="page4" style="display:none;">
                 <div class="center-content">
                     <h1>Build Triggered</h1>
                     <p>Your build has been triggered successfully!</p>
-
                     <div class="copy-container">
                         <input type="text" class="copy-text" value="Link to TeamCity Build" readonly>
                         <button class="copy-btn" onclick="copyToClipboard()">Copy</button>
                     </div>
-                   
                     <div>
                         <a href="#" id="configureLink" class="link">
                             <img src="{{ url_for('static', path='images/setting.png') }}" alt="Settings Icon" class="settings-icon">
@@ -80,6 +76,7 @@
         Developed and Maintained by TETD India Team
     </footer>  
 
-    <script src="{{ url_for('static', path='js/script.js') }}"></script>  
+    <script src="{{ url_for('static', path='js/script.js') }}"></script>   
 </body>
 </html>
+
