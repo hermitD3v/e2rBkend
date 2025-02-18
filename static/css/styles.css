@@ -227,3 +227,8 @@ textarea.input-field:focus {
     font-weight: 900;
     color: #0071C5;
 }
+#suggestedTest, #suggestedRecipe {
+    color: #0071C5; 
+    font-weight: bold;
+    white-space: pre-line; 
+}
