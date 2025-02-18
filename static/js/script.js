@@ -61,15 +61,22 @@ function submitForm() {
                 throw new Error(errorData.detail || "Error occurred!");
             });
         }
-        return response.json();
+        return response.text();
     })
-    .then(data => {
-    
-        document.getElementById("suggestedTest").value = data.testcases.join("\n");
-        document.getElementById("suggestedRecipe").value = data.recipes.join("\n");
+    .then(html => {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, "text/html");
 
-        document.getElementById("page1").style.display = "none"; 
-        document.getElementById("page2").style.display = "block"; 
+    
+        const suggestedTest = doc.querySelector("#suggestedTest")?.textContent || "";
+        const suggestedRecipe = doc.querySelector("#suggestedRecipe")?.textContent || "";
+
+        document.getElementById("suggestedTest").textContent = suggestedTest;
+        document.getElementById("suggestedRecipe").textContent = suggestedRecipe;
+
+        
+        document.getElementById("page1").style.display = "none";
+        document.getElementById("page2").style.display = "block";
     })
     .catch(error => {
         console.error("Error:", error);
