@@ -1,8 +1,6 @@
 let currentPage = 0;
 const pages = document.querySelectorAll('.page');
 const slider = document.querySelector('.slider');
-const progressBar = document.getElementById("progressBar");
-const progressBarContainer = document.getElementById("progress-bar-container");
 
 function nextPage() {
     if (currentPage < pages.length - 1) {
@@ -48,13 +46,7 @@ function submitForm() {
         return;
     }
 
-    
     runButton.style.display = "none";  
-    progressBarContainer.style.display = "block";  
-    progressBar.style.display = "block";  
-    progressBar.value = 0;
-
-    document.getElementById("page1").style.display = "none"; 
 
     fetch("/run", {
         method: "POST",
@@ -66,28 +58,23 @@ function submitForm() {
     .then(response => {
         if (!response.ok) {
             return response.json().then(errorData => {
-                throw new Error(errorData.detail || "Error occurred");
+                throw new Error(errorData.detail || "Error occurred!");
             });
         }
         return response.json();
     })
     .then(data => {
-        
+    
         document.getElementById("suggestedTest").value = data.testcases.join("\n");
         document.getElementById("suggestedRecipe").value = data.recipes.join("\n");
 
-        
-        progressBar.style.display = "none"; 
-        progressBarContainer.style.display = "none";
         document.getElementById("page2").style.display = "block"; 
     })
     .catch(error => {
         console.error("Error:", error);
         errorMessage.style.display = "block";
         errorMessage.textContent = error.message;
-        progressBar.style.display = "none"; 
-        progressBarContainer.style.display = "none";
-        runButton.style.display = "block";  
+        runButton.style.display = "block";
     });
 }
 
