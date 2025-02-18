@@ -68,6 +68,7 @@ function submitForm() {
         document.getElementById("suggestedTest").value = data.testcases.join("\n");
         document.getElementById("suggestedRecipe").value = data.recipes.join("\n");
 
+        document.getElementById("page1").style.display = "none"; 
         document.getElementById("page2").style.display = "block"; 
     })
     .catch(error => {
